@@ -40,7 +40,7 @@ module.exports = function(src, options = {}) {
     switch (node.type) {
       case 'ImportExpression':
         if (!options.skipAsyncImports && node.source && node.source.value) {
-          dependencies.push(node.source.value);
+          dependencies.push({ value: node.source.value });
         }
         break;
       case 'ImportDeclaration':
@@ -48,23 +48,23 @@ module.exports = function(src, options = {}) {
           break;
         }
         if (node.source && node.source.value) {
-          dependencies.push(node.source.value);
+          dependencies.push({ value: node.source.value, specifiers: node.specifiers?.map(s => s.imported?.name) });
         }
         break;
       case 'ExportNamedDeclaration':
       case 'ExportAllDeclaration':
         if (node.source && node.source.value) {
-          dependencies.push(node.source.value);
+          dependencies.push({ value: node.source.value });
         }
         break;
       case 'TSExternalModuleReference':
         if (node.expression && node.expression.value) {
-          dependencies.push(node.expression.value);
+          dependencies.push({ value: node.expression.value });
         }
         break;
       case 'TSImportType':
         if (!skipTypeImports && node.parameter.type === 'TSLiteralType') {
-          dependencies.push(node.parameter.literal.value);
+          dependencies.push({ value: node.parameter.literal.value });
         }
         break;
       case 'CallExpression':
@@ -77,10 +77,10 @@ module.exports = function(src, options = {}) {
         if (types.isPlainRequire(node)) {
           const result = extractDependencyFromRequire(node);
           if (result) {
-            dependencies.push(result);
+            dependencies.push({ value: result });
           }
         } else if (types.isMainScopedRequire(node)) {
-          dependencies.push(extractDependencyFromMainRequire(node));
+          dependencies.push({ value: extractDependencyFromMainRequire(node) });
         }
 
         break;
